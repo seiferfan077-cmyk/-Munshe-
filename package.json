@@ -1,0 +1,21 @@
+{
+  "name": "munshe-platform",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "pnpm --filter @munshe/shared build && pnpm --parallel --filter @munshe/api --filter @munshe/web dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm --filter @munshe/shared build && pnpm -r typecheck",
+    "test": "pnpm --filter @munshe/shared build && pnpm -r test",
+    "db:generate": "pnpm --filter @munshe/api db:generate",
+    "db:migrate": "pnpm --filter @munshe/api db:migrate",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,css,html,yml,yaml,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,css,html,yml,yaml,md}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  }
+}
