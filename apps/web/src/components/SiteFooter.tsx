@@ -11,7 +11,7 @@ export function SiteFooter({
     <>
       <footer className={`site-footer site-footer--${variant}`} dir="rtl">
         <span className="footer-rights">
-          © 2026 مُنشي. الحقوق محفوظة لـ مُرشد _S7.
+          © 2026 مُنشئ. الحقوق محفوظة لـ مُرشد _S7.
         </span>
         <nav className="footer-links" aria-label="روابط المساعدة والسياسات">
           <a href="mailto:Seiferfan077@gmail.com">الدعم</a>

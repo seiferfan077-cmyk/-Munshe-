@@ -104,7 +104,7 @@ function Auth({ onLogin }: { onLogin: (s: Session) => void }) {
           <h1>
             عندك الكود؟
             <br />
-            <em>مُنشي يجهزهولك APK.</em>
+            <em>مُنشئ يجهزهولك APK.</em>
           </h1>
           <p>
             حط رابط مشروع Expo العام على GitHub، وسيب علينا تجهيز نسخة Android
@@ -335,7 +335,7 @@ function App() {
             <h1>
               حوّل كودك لـ <em>تطبيق.</em>
             </h1>
-            <p>حط رابط مشروعك العام، ومُنشي يتولى الباقي.</p>
+            <p>حط رابط مشروعك العام، ومُنشئ يتولى الباقي.</p>
           </div>
           <div className="welcome-code">
             <span>01</span>
@@ -482,7 +482,7 @@ function App() {
           <div>
             <span>02</span>
             <div>
-              <b>مُنشي يجهّز التطبيق</b>
+              <b>مُنشئ يجهّز التطبيق</b>
               <small>فحص وتجهيز وبناء</small>
             </div>
           </div>

@@ -2,7 +2,7 @@
 :root {
   font-family: "IBM Plex Sans Arabic", sans-serif;
   color: #202521;
-  background: #f5f3ee;
+  background: #f7f7f7;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   font-smooth: always;
@@ -10,8 +10,8 @@
   --muted: #7e827b;
   --paper: #fbfaf7;
   --line: #e6e4dd;
-  --accent: #c9f36b;
-  --green: #395d26;
+  --accent: #111111;
+  --green: #4a4a4a;
   --orange: #ee8151;
 }
 * {
@@ -32,7 +32,7 @@ button {
 .app-shell,
 .auth-page {
   min-height: 100vh;
-  background-color: #f5f3ee;
+  background-color: #f7f7f7;
   background-image: radial-gradient(#d8d6cd 0.65px, transparent 0.65px);
   background-size: 17px 17px;
 }
@@ -43,7 +43,7 @@ button {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid #dedcd5;
-  background: rgba(251, 250, 247, 0.8);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(12px);
 }
 .brand {
@@ -87,7 +87,7 @@ button {
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #677360;
+  color: #4a4a4a;
   font-size: 12px;
 }
 .env-badge i,
@@ -95,8 +95,8 @@ button {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #6a9a39;
-  box-shadow: 0 0 0 3px #6a9a391b;
+  background: #888888;
+  box-shadow: 0 0 0 3px #8888881b;
 }
 .user-email {
   font-size: 12px;
@@ -134,7 +134,7 @@ button {
 .eyebrow > span {
   width: 7px;
   height: 7px;
-  background: #7aa740;
+  background: #888888;
   border-radius: 50%;
 }
 .welcome-row h1,
@@ -148,7 +148,7 @@ button {
 .welcome-row h1 em,
 .auth-copy h1 em {
   font-style: normal;
-  color: #607744;
+  color: #4a4a4a;
 }
 .welcome-row p,
 .auth-copy > p {
@@ -167,7 +167,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  color: #8da370;
+  color: #888888;
   position: relative;
 }
 .welcome-code span {
@@ -210,7 +210,7 @@ button {
 }
 .step {
   font: 11px "DM Mono";
-  color: #858d76;
+  color: #888888;
   background: #eff1e8;
   width: 27px;
   height: 27px;
@@ -233,7 +233,7 @@ button {
 }
 .live-tag {
   font: 10px "DM Mono";
-  color: #748169;
+  color: #888888;
 }
 .panel-sub {
   font-size: 12px;
@@ -256,16 +256,16 @@ button {
 }
 .dropzone:hover,
 .dropzone.is-dragging {
-  border-color: #77994d;
+  border-color: #888888;
   background: #f4f8ec;
-  box-shadow: inset 0 0 0 1px #77994d1a;
+  box-shadow: inset 0 0 0 1px #8888881a;
 }
 .upload-icon {
   width: 38px;
   height: 38px;
   border-radius: 12px;
   background: #edf2e4;
-  color: #688544;
+  color: #888888;
   display: grid;
   place-items: center;
   margin-bottom: 4px;
@@ -279,7 +279,7 @@ button {
   color: #82867e;
 }
 .dropzone > span b {
-  color: #5d763e;
+  color: #4a4a4a;
   font-weight: 600;
 }
 .dropzone > small {
@@ -298,7 +298,7 @@ button {
   height: 44px;
   border-radius: 12px;
   background: #edf2e4;
-  color: #688544;
+  color: #888888;
   display: grid;
   place-items: center;
 }
@@ -346,12 +346,12 @@ button {
 }
 .project-name input:focus,
 .auth-card input:focus {
-  border-color: #93ae69;
-  box-shadow: 0 0 0 3px #a8c28322;
+  border-color: #888888;
+  box-shadow: 0 0 0 3px #bbbbbb22;
 }
 .primary {
   border: 0;
-  background: #263328;
+  background: #222222;
   color: #f8f9f5;
   font-weight: 600;
   border-radius: 11px;
@@ -362,9 +362,9 @@ button {
   transition: 0.18s ease;
 }
 .primary:hover:not(:disabled) {
-  background: #42573a;
+  background: #4a4a4a;
   transform: translateY(-1px);
-  box-shadow: 0 7px 14px #26332820;
+  box-shadow: 0 7px 14px #22222220;
 }
 .primary:disabled {
   opacity: 0.65;
@@ -407,7 +407,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  color: #8ba36f;
+  color: #888888;
   background: #f8f9f3;
   position: relative;
 }
@@ -416,7 +416,7 @@ button {
   position: absolute;
   bottom: 10px;
   right: 7px;
-  color: #97a583;
+  color: #888888;
 }
 .empty-state strong {
   font-size: 13px;
@@ -458,7 +458,7 @@ button {
 }
 .mini-status.completed,
 .status-icon.completed {
-  color: #4e773a;
+  color: #4a4a4a;
   background: #eff5e9;
 }
 .mini-status.failed,
@@ -498,7 +498,7 @@ button {
   white-space: nowrap;
 }
 .item-status.completed {
-  color: #537540;
+  color: #4a4a4a;
 }
 .item-status.failed {
   color: #b95136;
@@ -580,14 +580,14 @@ button {
   font-size: 9px;
 }
 .progress-stage.done {
-  color: #618044;
+  color: #888888;
 }
 .progress-stage.done .progress-dot {
   background: #eef4e6;
   border-color: #dae6ca;
 }
 .progress-stage.current {
-  color: #737d64;
+  color: #888888;
 }
 .progress-stage.current .progress-dot {
   background: #f5f4e9;
@@ -640,7 +640,7 @@ button {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #8ea26c;
+  background: #888888;
   flex: 0 0 auto;
   margin-top: 6px;
 }
@@ -663,7 +663,7 @@ button {
   width: 100%;
   font-size: 12px;
   margin-top: 12px;
-  background: #58733e;
+  background: #4a4a4a;
 }
 .cancel-button {
   border: 0;
@@ -716,7 +716,7 @@ button {
   background: #ecefe5;
   display: grid;
   place-items: center;
-  color: #6e8256;
+  color: #888888;
   font: 9px "DM Mono";
 }
 .steps-strip > div div {
@@ -813,9 +813,9 @@ button {
   gap: 7px;
   border: 1px solid #e2e2d9;
   border-radius: 9px;
-  background: #fbfaf7;
+  background: #ffffff;
   padding: 10px 12px;
-  color: #5f6d52;
+  color: #4a4a4a;
   font: 11px "DM Mono";
 }
 .auth-flow svg {
@@ -828,7 +828,7 @@ button {
 }
 .auth-card {
   padding: 29px;
-  background: #fbfaf7;
+  background: #ffffff;
   border: 1px solid #e3e1da;
   border-radius: 19px;
   box-shadow: 0 10px 34px #302f240b;
@@ -838,7 +838,7 @@ button {
   height: 38px;
   border-radius: 12px;
   background: #edf2e4;
-  color: #69854c;
+  color: #888888;
   display: grid;
   place-items: center;
 }
@@ -884,7 +884,7 @@ button {
   width: 100%;
   border: 0;
   background: none;
-  color: #748361;
+  color: #888888;
   font-size: 11px;
   margin-top: 13px;
   padding: 7px;
@@ -1008,7 +1008,7 @@ button {
   place-items: center;
   flex: 0 0 auto;
   color: #edf4e4;
-  background: #263328;
+  background: #222222;
   border-radius: 11px;
 }
 .source-badge > div {
@@ -1026,7 +1026,7 @@ button {
   font-size: 10px;
 }
 .source-badge-link {
-  color: #8a9878;
+  color: #888888;
 }
 .source-label {
   display: flex;
@@ -1062,8 +1062,8 @@ button {
   opacity: 1;
 }
 .source-label input:focus {
-  border-color: #879e68;
-  box-shadow: 0 0 0 3px #a8c28325;
+  border-color: #888888;
+  box-shadow: 0 0 0 3px #bbbbbb25;
 }
 .source-hint {
   margin: 7px 0 15px;
@@ -1118,14 +1118,14 @@ button {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #66764f;
+  color: #4a4a4a;
   font: inherit;
   text-decoration: none;
   cursor: pointer;
 }
 .footer-links a:hover,
 .footer-links button:hover {
-  color: #30432f;
+  color: #222222;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -1136,7 +1136,7 @@ button {
   display: grid;
   place-items: center;
   padding: 18px;
-  background: #162019a8;
+  background: #222222a8;
   backdrop-filter: blur(5px);
 }
 .legal-dialog {
@@ -1147,8 +1147,8 @@ button {
   overflow: hidden;
   border: 1px solid #e5e6dc;
   border-radius: 19px;
-  background: #fbfaf7;
-  box-shadow: 0 24px 80px #10181040;
+  background: #ffffff;
+  box-shadow: 0 24px 80px #22222240;
 }
 .legal-header {
   display: flex;
@@ -1163,7 +1163,7 @@ button {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 12px;
-  color: #58753e;
+  color: #4a4a4a;
   background: #edf2e4;
 }
 .legal-header > div:nth-child(2) {
@@ -1204,7 +1204,7 @@ button {
   font-size: 11px;
 }
 .legal-tabs button.active {
-  color: #3d5733;
+  color: #4a4a4a;
   background: #eef2e7;
   font-weight: 600;
 }
@@ -1217,7 +1217,7 @@ button {
 }
 .legal-content h3 {
   margin: 18px 0 4px;
-  color: #303a30;
+  color: #222222;
   font-size: 13px;
 }
 .legal-content p {
@@ -1226,9 +1226,9 @@ button {
 .legal-content .legal-lead {
   margin-top: 0;
   padding: 12px 14px;
-  border-right: 3px solid #a9c876;
+  border-right: 3px solid #bbbbbb;
   border-radius: 8px;
-  color: #435541;
+  color: #4a4a4a;
   background: #f1f4e9;
   font-weight: 500;
 }
@@ -1240,7 +1240,7 @@ button {
   font-size: 10px;
 }
 :focus-visible {
-  outline: 3px solid #86a95b88;
+  outline: 3px solid #88888888;
   outline-offset: 2px;
 }
 @media (max-width: 760px) {
