@@ -11,6 +11,7 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { pipeline } from "node:stream/promises";
 import { z } from "zod";
+import { normalizePublicGitHubRepoUrl } from "@munshe/shared";
 import { prisma } from "./db.js";
 import { registerAuthRoutes } from "./auth.js";
 
@@ -148,6 +149,79 @@ app.post(
   },
 );
 
+app.post(
+  "/api/builds/from-github",
+  { preHandler: app.authenticate },
+  async (request: any, reply) => {
+    const input = z
+      .object({
+        sourceUrl: z.string().trim().min(1).max(2048),
+        projectName: z.string().trim().min(1).max(80).optional(),
+      })
+      .safeParse(request.body);
+    if (!input.success)
+      return reply.code(400).send({ error: "راجع رابط GitHub واسم المشروع." });
+
+    const sourceUrl = normalizePublicGitHubRepoUrl(input.data.sourceUrl);
+    if (!sourceUrl)
+      return reply.code(400).send({
+        error:
+          "حط رابط مستودع GitHub عام بالشكل https://github.com/account/project",
+      });
+
+    const repoName = new URL(sourceUrl).pathname
+      .split("/")
+      .filter(Boolean)[1]
+      ?.replace(/\.git$/i, "");
+    const projectName = input.data.projectName || repoName?.slice(0, 80);
+    if (!projectName)
+      return reply.code(400).send({ error: "اكتب اسم المشروع." });
+
+    const id = randomUUID();
+    try {
+      const build = await prisma.build.create({
+        data: {
+          id,
+          projectName,
+          sourcePath: null,
+          sourceUrl,
+          userId: request.user.sub,
+          status: "queued",
+        },
+      });
+      await prisma.buildLog.create({
+        data: {
+          buildId: id,
+          message: "استلمنا رابط GitHub العام، وهنبدأ نسحب المشروع.",
+        },
+      });
+      await queue.add(
+        "build",
+        { buildId: id },
+        { jobId: id, attempts: 1, removeOnComplete: 100, removeOnFail: 500 },
+      );
+      return reply.code(202).send({
+        build: {
+          id: build.id,
+          projectName: build.projectName,
+          status: build.status,
+        },
+      });
+    } catch {
+      await prisma.build.updateMany({
+        where: { id },
+        data: {
+          status: "failed",
+          errorMessage: "تعذر إضافة المشروع إلى طابور البناء.",
+        },
+      });
+      return reply.code(503).send({
+        error: "مش قادرين نضيف المشروع لطابور البناء دلوقتي. جرّب كمان شوية.",
+      });
+    }
+  },
+);
+
 app.get(
   "/api/builds",
   { preHandler: app.authenticate },
@@ -233,15 +307,26 @@ app.post(
       return reply
         .code(409)
         .send({ error: "تقدر تعيد المحاولة بعد ما البناء يفشل أو يتلغي." });
-    const existingSource = path.resolve(build.sourcePath);
-    if (!existingSource.startsWith(path.join(root, "uploads") + path.sep))
-      return reply.code(403).send({ error: "مسار المشروع غير مسموح." });
-    try {
-      await stat(existingSource);
-    } catch {
+    if (build.sourceUrl) {
+      if (!normalizePublicGitHubRepoUrl(build.sourceUrl))
+        return reply
+          .code(403)
+          .send({ error: "رابط مستودع المشروع غير مسموح." });
+    } else if (build.sourcePath) {
+      const existingSource = path.resolve(build.sourcePath);
+      if (!existingSource.startsWith(path.join(root, "uploads") + path.sep))
+        return reply.code(403).send({ error: "مسار المشروع غير مسموح." });
+      try {
+        await stat(existingSource);
+      } catch {
+        return reply.code(404).send({
+          error: "ملف المشروع الأصلي مش موجود. ارفع المشروع من جديد.",
+        });
+      }
+    } else {
       return reply
         .code(404)
-        .send({ error: "ملف المشروع الأصلي مش موجود. ارفع المشروع من جديد." });
+        .send({ error: "مصدر المشروع مش موجود. ابعت الرابط من جديد." });
     }
     const oldJob = await queue.getJob(build.id);
     if (oldJob) {

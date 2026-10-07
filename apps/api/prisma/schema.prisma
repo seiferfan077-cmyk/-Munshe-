@@ -18,7 +18,8 @@ model User {
 model Build {
   id            String      @id @default(cuid())
   projectName   String
-  sourcePath    String
+  sourcePath    String?
+  sourceUrl     String?
   artifactPath  String?
   status        String      @default("queued")
   errorMessage  String?

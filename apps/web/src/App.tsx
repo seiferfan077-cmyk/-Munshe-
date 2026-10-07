@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ArrowDownToLine,
   ArrowLeft,
@@ -7,13 +7,12 @@ import {
   CircleAlert,
   Clock3,
   Code2,
-  FileArchive,
+  Github,
   Hammer,
   LoaderCircle,
   LogOut,
   RefreshCw,
   ShieldCheck,
-  Upload,
   X,
 } from "lucide-react";
 import {
@@ -22,6 +21,8 @@ import {
   type BuildSummary,
   type BuildStatus,
 } from "@munshe/shared";
+import { BuildSourceForm } from "./components/BuildSourceForm.js";
+import { SiteFooter } from "./components/SiteFooter.js";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 type Session = { token: string; user: { id: string; email: string } };
@@ -58,13 +59,10 @@ const date = (s: string) =>
 function Brand() {
   return (
     <div className="brand">
-      <div className="brand-mark">
-        <Code2 size={20} strokeWidth={2.2} />
-        <i />
-      </div>
+      <img className="brand-mark" src="/munshe-logo.png" alt="" />
       <div>
-        <b>مُنشئ</b>
-        <small>MUNSHE'</small>
+        <b>مُنشي</b>
+        <small>MUNSHI</small>
       </div>
     </div>
   );
@@ -99,7 +97,7 @@ function Auth({ onLogin }: { onLogin: (s: Session) => void }) {
       <nav className="topbar">
         <Brand />
         <span className="top-note">
-          <ShieldCheck size={15} /> كودك في أمان
+          <ShieldCheck size={15} /> نبني مشروعك من GitHub
         </span>
       </nav>
       <section className="auth-shell">
@@ -110,14 +108,15 @@ function Auth({ onLogin }: { onLogin: (s: Session) => void }) {
           <h1>
             عندك الكود؟
             <br />
-            <em>مُنشئ يطلع لك التطبيق.</em>
+            <em>مُنشي يجهزهولك APK.</em>
           </h1>
           <p>
-            ارفع مشروع Expo بتاعك، وسيب علينا تجهيز نسخة Android جاهزة للتثبيت.
+            حط رابط مشروع Expo العام على GitHub، وسيب علينا تجهيز نسخة Android
+            للاختبار.
           </p>
           <div className="auth-flow">
             <span>
-              <FileArchive /> ZIP
+              <Github /> GitHub
             </span>
             <i />
             <span>
@@ -185,9 +184,7 @@ function Auth({ onLogin }: { onLogin: (s: Session) => void }) {
           </button>
         </form>
       </section>
-      <div className="auth-footer">
-        مُنشئ ومُرشَد — من عيلة واحدة، وكل منتج له حكايته.
-      </div>
+      <SiteFooter variant="auth" />
     </main>
   );
 }
@@ -203,12 +200,10 @@ function App() {
   const [builds, setBuilds] = useState<BuildSummary[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [details, setDetails] = useState<Details | null>(null);
-  const [file, setFile] = useState<File | null>(null);
+  const [repoUrl, setRepoUrl] = useState("");
   const [projectName, setProjectName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [dragging, setDragging] = useState(false);
-  const picker = useRef<HTMLInputElement>(null);
   const token = session?.token;
   const load = useCallback(async () => {
     if (!token) return;
@@ -261,37 +256,25 @@ function App() {
   }, [token, selected]);
   if (!session) return <Auth onLogin={saveSession} />;
 
-  function choose(f?: File) {
-    if (!f) return;
-    setError("");
-    if (!f.name.toLowerCase().endsWith(".zip")) {
-      setError("لازم ترفع ملف ZIP للمشروع.");
-      return;
-    }
-    if (f.size > 300 * 1024 * 1024) {
-      setError("الملف أكبر من 300 ميجا.");
-      return;
-    }
-    setFile(f);
-    if (!projectName) setProjectName(f.name.replace(/\.zip$/i, ""));
-  }
-  async function upload(e: React.FormEvent) {
+  async function startBuild(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!file || !token) return;
+    if (!repoUrl.trim() || !token) return;
     setBusy(true);
     setError("");
     try {
-      const form = new FormData();
-      form.append("projectName", projectName);
-      form.append("project", file);
       const result = await request<{ build: { id: string } }>(
-        "/api/builds",
+        "/api/builds/from-github",
         token,
-        { method: "POST", body: form },
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sourceUrl: repoUrl.trim(),
+            ...(projectName.trim() ? { projectName: projectName.trim() } : {}),
+          }),
+        },
       );
-      setFile(null);
+      setRepoUrl("");
       setProjectName("");
-      if (picker.current) picker.current.value = "";
       setSelected(result.build.id);
       await load();
     } catch (e) {
@@ -339,7 +322,7 @@ function App() {
         <Brand />
         <div className="header-right">
           <span className="env-badge">
-            <i /> بيئة آمنة
+            <i /> بناء بصلاحيات مقيّدة
           </span>
           <span className="user-email">{session.user.email}</span>
           <button className="logout" title="تسجيل الخروج" onClick={logout}>
@@ -356,7 +339,7 @@ function App() {
             <h1>
               حوّل كودك لـ <em>تطبيق.</em>
             </h1>
-            <p>ارفع مشروع Expo، ومُنشئ يتولى الباقي.</p>
+            <p>حط رابط مشروعك العام، ومُنشي يتولى الباقي.</p>
           </div>
           <div className="welcome-code">
             <span>01</span>
@@ -365,110 +348,15 @@ function App() {
           </div>
         </div>
         <section className="workspace">
-          <form className="upload-panel" onSubmit={upload}>
-            <div className="panel-head">
-              <div>
-                <span className="step">01</span>
-                <h2>ارفع مشروعك</h2>
-              </div>
-              <span className="format-tag">EXPO / REACT NATIVE</span>
-            </div>
-            <p className="panel-sub">
-              ارفع المشروع كله في ملف ZIP. هنراجع الملفات قبل ما يبدأ البناء.
-            </p>
-            <div
-              className={`dropzone ${dragging ? "is-dragging" : ""} ${file ? "has-file" : ""}`}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragging(true);
-              }}
-              onDragLeave={() => setDragging(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setDragging(false);
-                choose(e.dataTransfer.files[0]);
-              }}
-              onClick={() => picker.current?.click()}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && picker.current?.click()}
-            >
-              <input
-                ref={picker}
-                type="file"
-                accept=".zip,application/zip"
-                hidden
-                onChange={(e) => choose(e.target.files?.[0])}
-              />
-              {file ? (
-                <>
-                  <div className="file-icon">
-                    <FileArchive />
-                  </div>
-                  <div className="file-info">
-                    <strong>{file.name}</strong>
-                    <small>
-                      {(file.size / 1024 / 1024).toFixed(1)} MB · جاهز للرفع
-                    </small>
-                  </div>
-                  <button
-                    type="button"
-                    className="remove-file"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setFile(null);
-                    }}
-                  >
-                    <X size={17} />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="upload-icon">
-                    <Upload />
-                  </div>
-                  <strong>اسحب ملف ZIP هنا</strong>
-                  <span>
-                    أو <b>اختار ملف من جهازك</b>
-                  </span>
-                  <small>أقصى حجم 300 ميجا</small>
-                </>
-              )}
-            </div>
-            {file && (
-              <label className="project-name">
-                اسم المشروع
-                <input
-                  value={projectName}
-                  maxLength={80}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  placeholder="مشروعي الجديد"
-                  required
-                />
-              </label>
-            )}
-            {error && (
-              <div className="error-box">
-                <CircleAlert size={17} />
-                {error}
-              </div>
-            )}
-            <button className="primary launch" disabled={!file || busy}>
-              {busy ? (
-                <>
-                  <LoaderCircle className="spin" /> بنرفع المشروع...
-                </>
-              ) : (
-                <>
-                  <Hammer size={18} /> يلا نبني التطبيق <ArrowLeft size={17} />
-                </>
-              )}
-            </button>
-            <div className="secure-note">
-              <ShieldCheck size={15} /> ملفاتك بتتخزن بشكل خاص ومش بتظهر لحد
-              غيرك
-            </div>
-          </form>
+          <BuildSourceForm
+            repoUrl={repoUrl}
+            setRepoUrl={setRepoUrl}
+            projectName={projectName}
+            setProjectName={setProjectName}
+            busy={busy}
+            error={error}
+            onSubmit={startBuild}
+          />
           <section className="build-panel">
             <div className="panel-head">
               <div>
@@ -590,15 +478,15 @@ function App() {
           <div>
             <span>01</span>
             <div>
-              <b>ارفع الكود</b>
-              <small>ملف ZIP لمشروع Expo</small>
+              <b>حط رابط المشروع</b>
+              <small>مستودع GitHub عام</small>
             </div>
           </div>
           <i />
           <div>
             <span>02</span>
             <div>
-              <b>مُنشئ يبني التطبيق</b>
+              <b>مُنشي يجهّز التطبيق</b>
               <small>فحص وتجهيز وبناء</small>
             </div>
           </div>
@@ -607,17 +495,11 @@ function App() {
             <span>03</span>
             <div>
               <b>حمّل الـAPK</b>
-              <small>جاهز للتثبيت على Android</small>
+              <small>نسخة اختبار لـAndroid</small>
             </div>
           </div>
         </section>
-        <footer className="footer">
-          <span>مُنشئ — من الكود إلى التطبيق.</span>
-          <span>
-            جزء من عيلة مُرشَد <span className="footer-sep">/</span> نسخة
-            تجريبية
-          </span>
-        </footer>
+        <SiteFooter />
       </main>
     </div>
   );

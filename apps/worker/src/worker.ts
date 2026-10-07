@@ -1,12 +1,16 @@
 import { Worker, type Job } from "bullmq";
 import { Redis } from "ioredis";
 import { PrismaClient } from "@prisma/client";
+import { normalizePublicGitHubRepoUrl } from "@munshe/shared";
 import { spawn } from "node:child_process";
+import { constants, createWriteStream } from "node:fs";
 import {
   chmod,
   chown,
   copyFile,
+  lstat,
   mkdir,
+  open,
   readFile,
   readdir,
   rm,
@@ -14,6 +18,7 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
+import { pipeline } from "node:stream/promises";
 
 const prisma = new PrismaClient();
 const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
@@ -68,6 +73,8 @@ function run(
       JAVA_TOOL_OPTIONS: "-Xmx4g -XX:MaxMetaspaceSize=1g",
       GRADLE_USER_HOME: path.join(home, ".gradle"),
       npm_config_update_notifier: "false",
+      GIT_TERMINAL_PROMPT: "0",
+      GIT_CONFIG_NOSYSTEM: "1",
     };
     const remainingMs = deadline - Date.now();
     if (remainingMs <= 0) {
@@ -158,6 +165,38 @@ async function locateProject(root: string): Promise<string> {
   );
 }
 
+async function validateGitCheckout(root: string) {
+  const pending = [root];
+  let entries = 0;
+  let totalBytes = 0;
+  while (pending.length) {
+    const current = pending.pop()!;
+    for (const entry of await readdir(current, { withFileTypes: true })) {
+      if (current === root && entry.name === ".git") {
+        if (!entry.isDirectory())
+          throw new Error("بيانات Git داخل المشروع غير صالحة.");
+        continue;
+      }
+      entries += 1;
+      if (entries > 50_000)
+        throw new Error("المستودع فيه ملفات أكتر من الحد المسموح.");
+      if (entry.isSymbolicLink())
+        throw new Error("المستودع فيه رابط رمزي غير مسموح.");
+      const target = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        pending.push(target);
+      } else if (entry.isFile()) {
+        const info = await lstat(target);
+        totalBytes += info.size;
+        if (totalBytes > 2 * 1024 ** 3)
+          throw new Error("حجم ملفات المستودع أكبر من الحد المسموح.");
+      } else {
+        throw new Error("المستودع فيه نوع ملف غير مدعوم.");
+      }
+    }
+  }
+}
+
 async function processBuild(job: Job<{ buildId: string }>) {
   const { buildId } = job.data;
   const build = await prisma.build.findUnique({ where: { id: buildId } });
@@ -175,18 +214,45 @@ async function processBuild(job: Job<{ buildId: string }>) {
       await mkdir(p, { mode: 0o777 });
       await chmod(p, 0o777);
     }
-    await copyFile(build.sourcePath, sourceCopy);
-    await chmod(sourceCopy, 0o644);
     await setStatus(buildId, "preparing");
-    await log(buildId, "بنراجع ملفات المشروع وبنتأكد إنها آمنة.");
-    await run(
-      "python3",
-      ["/app/safe_extract.py", sourceCopy, extracted],
-      workdir,
-      buildId,
-      workdir,
-      deadline,
-    );
+    await log(buildId, "بنجهز ملفات المشروع وبنتأكد إنها مناسبة للبناء.");
+    if (build.sourceUrl) {
+      const repoUrl = normalizePublicGitHubRepoUrl(build.sourceUrl);
+      if (!repoUrl) throw new Error("رابط GitHub المحفوظ غير مسموح.");
+      await log(buildId, "بنسحب آخر نسخة من مستودع GitHub العام.");
+      await run(
+        "git",
+        [
+          "-c",
+          "http.followRedirects=false",
+          "clone",
+          "--depth=1",
+          "--no-tags",
+          "--single-branch",
+          "--",
+          repoUrl,
+          extracted,
+        ],
+        workdir,
+        buildId,
+        workdir,
+        deadline,
+      );
+      await validateGitCheckout(extracted);
+    } else if (build.sourcePath) {
+      await copyFile(build.sourcePath, sourceCopy);
+      await chmod(sourceCopy, 0o644);
+      await run(
+        "python3",
+        ["/app/safe_extract.py", sourceCopy, extracted],
+        workdir,
+        buildId,
+        workdir,
+        deadline,
+      );
+    } else {
+      throw new Error("مفيش رابط أو ملف ZIP محفوظ للمشروع.");
+    }
     const projectDir = await locateProject(extracted);
     const pkg = JSON.parse(
       await readFile(path.join(projectDir, "package.json"), "utf8"),
@@ -280,11 +346,31 @@ async function processBuild(job: Job<{ buildId: string }>) {
       "debug",
       "app-debug.apk",
     );
-    const info = await stat(apk);
-    if (!info.isFile() || info.size < 1024)
-      throw new Error("البناء انتهى لكن ملف APK الناتج غير صالح.");
     const artifactPath = path.join(storage, "artifacts", `${buildId}.apk`);
-    await copyFile(apk, artifactPath);
+    const apkHandle = await open(
+      apk,
+      constants.O_RDONLY | constants.O_NOFOLLOW,
+    );
+    try {
+      const info = await apkHandle.stat();
+      if (
+        !info.isFile() ||
+        info.uid !== Number(builderUid) ||
+        info.size < 1024 ||
+        info.size > 2 * 1024 ** 3
+      ) {
+        throw new Error("البناء انتهى لكن ملف APK الناتج غير صالح.");
+      }
+      await pipeline(
+        apkHandle.createReadStream({ autoClose: false }),
+        createWriteStream(artifactPath, { flags: "wx", mode: 0o600 }),
+      );
+    } catch (error) {
+      await rm(artifactPath, { force: true });
+      throw error;
+    } finally {
+      await apkHandle.close();
+    }
     await chown(artifactPath, 1000, 1000);
     await chmod(artifactPath, 0o640);
     const changed = await prisma.build.updateMany({

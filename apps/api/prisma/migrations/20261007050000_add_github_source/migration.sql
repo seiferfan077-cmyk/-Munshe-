@@ -1,0 +1,2 @@
+ALTER TABLE "Build" ALTER COLUMN "sourcePath" DROP NOT NULL;
+ALTER TABLE "Build" ADD COLUMN "sourceUrl" TEXT;
