@@ -1,0 +1,48 @@
+name: Munshe Build Worker
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_url:
+        description: 'رابط ملف المشروع (ZIP)'
+        required: true
+        type: string
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+          with:
+          node-version: '18'
+
+      - name: Download and Unzip Project
+        run: |
+          wget ${{ github.event.inputs.project_url }} -O project.zip
+          unzip project.zip -d munshe_app
+          
+      - name: Install Dependencies
+        run: |
+          cd munshe_app
+          npm install
+
+      - name: Build APK
+        run: |
+          echo "جاري بناء التطبيق..."
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release
+          path: munshe_app/android/app/build/outputs/apk/release/app-release.apk
