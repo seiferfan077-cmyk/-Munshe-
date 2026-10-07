@@ -1,0 +1,53 @@
+name: Deploy Munshe Serverless API
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Cloudflare Worker
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Deploy Worker
+        working-directory: cloudflare/worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.148.0 deploy --config wrangler.toml
+
+      - name: Set GitHub API secret on Worker
+        working-directory: cloudflare/worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GITHUB_WORKER_TOKEN: ${{ secrets.MUNSHE_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$GITHUB_WORKER_TOKEN"
+          printf '%s' "$GITHUB_WORKER_TOKEN" | npx --yes wrangler@4.148.0 secret put GITHUB_TOKEN --config wrangler.toml
+
+      - name: Set session signing secret on Worker
+        working-directory: cloudflare/worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SESSION_SECRET: ${{ secrets.MUNSHE_SESSION_SECRET }}
+        run: |
+          set -euo pipefail
+          test -n "$SESSION_SECRET"
+          printf '%s' "$SESSION_SECRET" | npx --yes wrangler@4.148.0 secret put SESSION_SECRET --config wrangler.toml
