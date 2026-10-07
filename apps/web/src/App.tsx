@@ -59,11 +59,7 @@ const date = (s: string) =>
 function Brand() {
   return (
     <div className="brand">
-      <img className="brand-mark" src="/munshe-logo.png" alt="" />
-      <div>
-        <b>مُنشي</b>
-        <small>MUNSHI</small>
-      </div>
+      <img className="brand-mark" src="/munshe-logo.png" alt="مُنشئ — مُرشَد" />
     </div>
   );
 }
