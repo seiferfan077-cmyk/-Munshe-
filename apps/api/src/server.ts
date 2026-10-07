@@ -232,7 +232,7 @@ app.get(
       take: 50,
     });
     return {
-      builds: builds.map((b) => ({
+      builds: builds.map((b: (typeof builds)[number]) => ({
         id: b.id,
         projectName: b.projectName,
         status: b.status,
