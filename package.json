@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "pnpm --filter @munshe/shared build && pnpm --parallel --filter @munshe/api --filter @munshe/web dev",
     "build": "pnpm -r build",

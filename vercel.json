@@ -1,5 +1,5 @@
 {
   "buildCommand": "pnpm --filter @munshe/shared build && pnpm --filter @munshe/web build",
   "outputDirectory": "apps/web/dist",
-  "installCommand": "pnpm install"
+  "installCommand": "pnpm install --frozen-lockfile"
 }
