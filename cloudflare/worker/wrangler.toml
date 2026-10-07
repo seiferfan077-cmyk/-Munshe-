@@ -1,0 +1,14 @@
+name = "munshe-api"
+main = "src/index.ts"
+compatibility_date = "2026-10-07"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "munshe-db"
+database_id = "2cdb5a9e-bfd1-4970-a49d-a4f812826377"
+
+[vars]
+GITHUB_OWNER = "seiferfan077-cmyk"
+GITHUB_REPO = "-Munshe-"
+GITHUB_WORKFLOW = "build-apk.yml"
+ALLOWED_ORIGIN = "*"
