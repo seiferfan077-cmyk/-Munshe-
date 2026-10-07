@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm --filter @munshe/web build",
+  "outputDirectory": "apps/web/dist",
+  "installCommand": "pnpm install"
+}
