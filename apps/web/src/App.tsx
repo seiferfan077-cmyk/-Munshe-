@@ -24,7 +24,9 @@ import {
 import { BuildSourceForm } from "./components/BuildSourceForm.js";
 import { SiteFooter } from "./components/SiteFooter.js";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? "http://localhost:4000" : "");
 type Session = { token: string; user: { id: string; email: string } };
 type Details = { build: BuildSummary; logs: BuildLogEntry[] };
 
@@ -59,7 +61,11 @@ const date = (s: string) =>
 function Brand() {
   return (
     <div className="brand">
-      <img className="brand-mark" src="/munshe-logo.png" alt="مُنشئ — Munshe" />
+      <img
+        className="brand-mark"
+        src={`${import.meta.env.BASE_URL}munshe-logo.png`}
+        alt="مُنشئ — Munshe"
+      />
     </div>
   );
 }
